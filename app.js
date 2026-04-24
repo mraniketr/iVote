@@ -1,5 +1,5 @@
-const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_URL = window.APP_CONFIG?.supabaseUrl || "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = window.APP_CONFIG?.supabaseAnonKey || "YOUR_SUPABASE_ANON_KEY";
 
 const statusEl = document.getElementById("status");
 const sendOtpForm = document.getElementById("send-otp-form");
@@ -8,8 +8,6 @@ const sessionBox = document.getElementById("session-box");
 const logoutBtn = document.getElementById("logout-btn");
 const phoneInput = document.getElementById("phone");
 const otpInput = document.getElementById("otp");
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function setStatus(message, tone = "") {
   statusEl.textContent = message;
@@ -26,59 +24,68 @@ function setAuthenticated(isAuthenticated) {
   }
 }
 
-sendOtpForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const phone = phoneInput.value.trim();
+if (
+  SUPABASE_URL.includes("YOUR-PROJECT") ||
+  SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")
+) {
+  setStatus("Add your Supabase URL and anon key in config.js before using OTP login.", "error");
+} else {
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  if (!phone.startsWith("+")) {
-    setStatus("Use E.164 format, for example +15555551234.", "error");
-    return;
-  }
+  sendOtpForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const phone = phoneInput.value.trim();
 
-  setStatus("Sending OTP...");
+    if (!phone.startsWith("+")) {
+      setStatus("Use E.164 format, for example +15555551234.", "error");
+      return;
+    }
 
-  const { error } = await supabase.auth.signInWithOtp({ phone });
+    setStatus("Sending OTP...");
 
-  if (error) {
-    setStatus(error.message, "error");
-    return;
-  }
+    const { error } = await supabase.auth.signInWithOtp({ phone });
 
-  verifyOtpForm.classList.remove("hidden");
-  setStatus("OTP sent. Check your mobile SMS and enter the code.", "success");
-});
+    if (error) {
+      setStatus(error.message, "error");
+      return;
+    }
 
-verifyOtpForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const phone = phoneInput.value.trim();
-  const token = otpInput.value.trim();
-
-  setStatus("Verifying OTP...");
-
-  const { data, error } = await supabase.auth.verifyOtp({
-    phone,
-    token,
-    type: "sms",
+    verifyOtpForm.classList.remove("hidden");
+    setStatus("OTP sent. Check your mobile SMS and enter the code.", "success");
   });
 
-  if (error) {
-    setStatus(error.message, "error");
-    return;
-  }
+  verifyOtpForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const phone = phoneInput.value.trim();
+    const token = otpInput.value.trim();
 
-  if (data?.session) {
-    setAuthenticated(true);
-    setStatus("You are signed in.", "success");
-  }
-});
+    setStatus("Verifying OTP...");
 
-logoutBtn.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  phoneInput.value = "";
-  setAuthenticated(false);
-  setStatus("Signed out.");
-});
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone,
+      token,
+      type: "sms",
+    });
 
-supabase.auth.getSession().then(({ data }) => {
-  setAuthenticated(Boolean(data.session));
-});
+    if (error) {
+      setStatus(error.message, "error");
+      return;
+    }
+
+    if (data?.session) {
+      setAuthenticated(true);
+      setStatus("You are signed in.", "success");
+    }
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    phoneInput.value = "";
+    setAuthenticated(false);
+    setStatus("Signed out.");
+  });
+
+  supabase.auth.getSession().then(({ data }) => {
+    setAuthenticated(Boolean(data.session));
+  });
+}

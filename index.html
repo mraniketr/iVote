@@ -12,6 +12,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
     <script defer src="./app.js"></script>
   </head>
   <body>
@@ -42,7 +43,7 @@
         <details class="setup-help">
           <summary>Supabase setup</summary>
           <ol>
-            <li>Replace <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>app.js</code>.</li>
+            <li>Update <code>config.js</code> with your <code>supabaseUrl</code> and <code>supabaseAnonKey</code> values.</li>
             <li>In your Supabase project, enable <strong>Phone</strong> under Auth providers.</li>
             <li>Configure your SMS provider in Supabase Auth settings.</li>
           </ol>
