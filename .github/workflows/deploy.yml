@@ -25,6 +25,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.SUPABASE_URL }}" || (echo "Missing SUPABASE_URL secret" && exit 1)
+          test -n "${{ secrets.SUPABASE_ANON_KEY }}" || (echo "Missing SUPABASE_ANON_KEY secret" && exit 1)
+
+      - name: Generate runtime config.js from secrets
+        run: |
+          cat > config.js <<EOF_CONFIG
+          window.APP_CONFIG = {
+            supabaseUrl: "${{ secrets.SUPABASE_URL }}",
+            supabaseAnonKey: "${{ secrets.SUPABASE_ANON_KEY }}"
+          };
+          EOF_CONFIG
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

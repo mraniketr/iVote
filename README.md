@@ -2,9 +2,9 @@
 
 Simple mobile-first login page using Supabase Phone OTP auth.
 
-## Configure Supabase
+## Configure Supabase (local)
 
-1. Copy your Supabase project settings into `config.js`:
+1. Open `config.js` and set:
    - `supabaseUrl`
    - `supabaseAnonKey`
 2. In Supabase Dashboard → Authentication → Providers, enable **Phone**.
@@ -24,7 +24,16 @@ Then visit `http://localhost:8080`.
 
 A workflow is included at `.github/workflows/deploy.yml`.
 
-1. Push this repository to GitHub.
-2. In GitHub repo settings, enable **Pages** and select **GitHub Actions** as the source.
-3. Push to `main` (or run the workflow manually from Actions tab).
-4. GitHub will publish the site URL after deployment.
+### Where to set `window.APP_CONFIG?.supabaseUrl` for GitHub deploys
+
+For GitHub Pages, `config.js` is generated during CI from GitHub Actions **repository secrets**.
+
+1. Go to your repo in GitHub.
+2. Open **Settings → Secrets and variables → Actions**.
+3. Add these **Repository secrets**:
+   - `SUPABASE_URL` (example: `https://xyzcompany.supabase.co`)
+   - `SUPABASE_ANON_KEY` (your Supabase anon/public key)
+4. In repo **Settings → Pages**, set source to **GitHub Actions**.
+5. Push to `main` (or run the workflow manually from Actions tab).
+
+The workflow will fail fast if either secret is missing.
